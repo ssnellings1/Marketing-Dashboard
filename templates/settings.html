@@ -52,10 +52,26 @@
             <i class="bi bi-x-circle me-1"></i>Disconnect QuickBooks
           </a>
         {% else %}
-          <p class="text-muted small mb-3">Click below to authorize the dashboard to read your QuickBooks marketing expenses. You'll be taken to QuickBooks to approve access — it takes about 30 seconds.</p>
+          <form method="POST">
+            <input type="hidden" name="action" value="save_qb_creds" />
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Client ID</label>
+              <input type="text" class="form-control font-monospace" name="qb_client_id"
+                     value="{{ setting.get('qb_client_id') or '' }}" placeholder="ABcd1234…" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Client Secret</label>
+              <input type="password" class="form-control font-monospace" name="qb_client_secret"
+                     value="{{ setting.get('qb_client_secret') or '' }}" placeholder="••••••••" />
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm mb-3">Save Credentials</button>
+          </form>
+          {% if setting.get('qb_client_id') %}
+          <p class="text-muted small mb-2">Credentials saved. Now click below to connect your QuickBooks company:</p>
           <a href="{{ url_for('integrations.qb_connect') }}" class="btn btn-success">
             <i class="bi bi-plug-fill me-2"></i>Connect QuickBooks
           </a>
+          {% endif %}
         {% endif %}
 
         <hr class="my-3" />

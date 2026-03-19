@@ -17,11 +17,14 @@ def settings():
             AppSetting.set("gmail_app_password", request.form.get("gmail_app_password", "").strip())
             flash("Gmail settings saved.", "success")
 
+        elif action == "save_qb_creds":
+            AppSetting.set("qb_client_id",     request.form.get("qb_client_id", "").strip())
+            AppSetting.set("qb_client_secret",  request.form.get("qb_client_secret", "").strip())
+            AppSetting.set("qb_redirect_uri",
+                           "https://web-production-75c4d.up.railway.app/integrations/quickbooks/callback")
+            flash("QuickBooks credentials saved. Now click Connect QuickBooks.", "success")
+
         elif action == "save_qb":
-            AppSetting.set("qb_client_id", request.form.get("qb_client_id", "").strip())
-            AppSetting.set("qb_client_secret", request.form.get("qb_client_secret", "").strip())
-            AppSetting.set("qb_realm_id", request.form.get("qb_realm_id", "").strip())
-            AppSetting.set("qb_refresh_token", request.form.get("qb_refresh_token", "").strip())
             AppSetting.set("qb_marketing_accounts", request.form.get("qb_marketing_accounts", "").strip())
             flash("QuickBooks settings saved.", "success")
 
