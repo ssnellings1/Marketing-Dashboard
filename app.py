@@ -57,6 +57,17 @@ def create_app():
     def index():
         return redirect(url_for("dashboard.home"))
 
+    # ── Public legal pages (required for QB production keys) ───────────────────
+    @app.route("/privacy")
+    def privacy():
+        from flask import render_template
+        return render_template("privacy.html")
+
+    @app.route("/eula")
+    def eula():
+        from flask import render_template
+        return render_template("eula.html")
+
     # ── DB init & seed ─────────────────────────────────────────────────────────
     with app.app_context():
         db.create_all()
