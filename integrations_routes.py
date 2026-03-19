@@ -21,6 +21,19 @@ def _qb_client():
     )
 
 
+@integrations_bp.route("/quickbooks/debug")
+@login_required
+def qb_debug():
+    from flask import jsonify
+    return jsonify({
+        "env_QB_CLIENT_ID":     os.environ.get("QB_CLIENT_ID", "NOT SET"),
+        "env_QB_CLIENT_SECRET": "SET" if os.environ.get("QB_CLIENT_SECRET") else "NOT SET",
+        "env_QB_REDIRECT_URI":  os.environ.get("QB_REDIRECT_URI", "NOT SET"),
+        "db_qb_client_id":      AppSetting.get("qb_client_id") or "NOT SET",
+        "db_qb_redirect_uri":   AppSetting.get("qb_redirect_uri") or "NOT SET",
+    })
+
+
 @integrations_bp.route("/quickbooks/connect")
 @login_required
 def qb_connect():
