@@ -40,11 +40,13 @@ def create_app():
     from dashboard import dashboard_bp
     from settings_routes import settings_bp
     from api_routes import api_bp
+    from integrations_routes import integrations_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(integrations_bp)
 
     # ── Health check (Railway) ─────────────────────────────────────────────────
     @app.route("/health")

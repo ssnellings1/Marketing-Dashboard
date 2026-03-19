@@ -43,35 +43,31 @@
         <p class="text-muted small mb-0 mt-1">Pulls marketing expenses automatically</p>
       </div>
       <div class="card-body">
+        {% if setting.get('qb_refresh_token') and setting.get('qb_realm_id') %}
+          <div class="alert alert-success d-flex align-items-center mb-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <div><strong>Connected</strong> — QuickBooks is syncing your expenses.</div>
+          </div>
+          <a href="{{ url_for('integrations.qb_disconnect') }}" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-x-circle me-1"></i>Disconnect QuickBooks
+          </a>
+        {% else %}
+          <p class="text-muted small mb-3">Click below to authorize the dashboard to read your QuickBooks marketing expenses. You'll be taken to QuickBooks to approve access — it takes about 30 seconds.</p>
+          <a href="{{ url_for('integrations.qb_connect') }}" class="btn btn-success">
+            <i class="bi bi-plug-fill me-2"></i>Connect QuickBooks
+          </a>
+        {% endif %}
+
+        <hr class="my-3" />
         <form method="POST">
           <input type="hidden" name="action" value="save_qb" />
           <div class="mb-3">
-            <label class="form-label small fw-semibold">Client ID</label>
-            <input type="text" class="form-control font-monospace" name="qb_client_id"
-                   value="{{ setting.get('qb_client_id') or '' }}" placeholder="ABcd1234…" />
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-semibold">Client Secret</label>
-            <input type="password" class="form-control font-monospace" name="qb_client_secret"
-                   value="{{ setting.get('qb_client_secret') or '' }}" placeholder="••••••••" />
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-semibold">Company (Realm) ID</label>
-            <input type="text" class="form-control font-monospace" name="qb_realm_id"
-                   value="{{ setting.get('qb_realm_id') or '' }}" placeholder="123456789" />
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-semibold">Refresh Token</label>
-            <input type="password" class="form-control font-monospace" name="qb_refresh_token"
-                   value="{{ setting.get('qb_refresh_token') or '' }}" placeholder="••••••••" />
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-semibold">Marketing Account Names</label>
+            <label class="form-label small fw-semibold">Marketing Account Names in QuickBooks</label>
             <input type="text" class="form-control" name="qb_marketing_accounts"
                    value="{{ setting.get('qb_marketing_accounts') or 'Advertising,Marketing,Promotions' }}" />
             <div class="form-text">Comma-separated. Must match your QuickBooks expense account names exactly.</div>
           </div>
-          <button type="submit" class="btn btn-primary btn-sm">Save QuickBooks Settings</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save</button>
         </form>
       </div>
     </div>
