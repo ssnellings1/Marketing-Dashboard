@@ -66,14 +66,19 @@ def create_app():
 
 def _seed_defaults():
     """Create admin user and default channels on first run."""
+    from sqlalchemy.exc import IntegrityError
+
     # Admin user
     admin_username = os.environ.get("ADMIN_USERNAME", "admin")
     admin_password = os.environ.get("ADMIN_PASSWORD", "changeme123")
-    if not User.query.filter_by(username=admin_username).first():
-        user = User(username=admin_username)
-        user.set_password(admin_password)
-        db.session.add(user)
-        db.session.commit()
+    try:
+        if not User.query.filter_by(username=admin_username).first():
+            user = User(username=admin_username)
+            user.set_password(admin_password)
+            db.session.add(user)
+            db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
 
     # Default marketing channels
     default_channels = [
@@ -89,10 +94,13 @@ def _seed_defaults():
         ("SEO / Organic",     "digital_organic", "#14B8A6"),
         ("Other",             "offline",         "#94A3B8"),
     ]
-    for name, ctype, color in default_channels:
-        if not MarketingChannel.query.filter_by(name=name).first():
-            db.session.add(MarketingChannel(name=name, channel_type=ctype, color=color))
-    db.session.commit()
+    try:
+        for name, ctype, color in default_channels:
+            if not MarketingChannel.query.filter_by(name=name).first():
+                db.session.add(MarketingChannel(name=name, channel_type=ctype, color=color))
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
 
 
 def _start_scheduler(app):
