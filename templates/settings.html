@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}Settings — PI Marketing{% endblock %}
+
+{% block content %}
+<h5 class="fw-bold mb-4">Settings & Integrations</h5>
+
+<div class="row g-4">
+
+  <!-- Gmail -->
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white border-0 pt-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-envelope-fill me-2 text-danger"></i>Gmail (Email Reports)</h6>
+        <p class="text-muted small mb-0 mt-1">Used to receive and parse Filevine & Lead Docket reports</p>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <input type="hidden" name="action" value="save_gmail" />
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Gmail Address</label>
+            <input type="email" class="form-control" name="gmail_address"
+                   value="{{ setting.get('gmail_address') or '' }}" placeholder="yourfirm.dashboard@gmail.com" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">App Password
+              <a href="https://support.google.com/accounts/answer/185833" target="_blank" class="ms-1 small">(how to get one)</a>
+            </label>
+            <input type="password" class="form-control" name="gmail_app_password"
+                   value="{{ setting.get('gmail_app_password') or '' }}" placeholder="xxxx xxxx xxxx xxxx" />
+            <div class="form-text">Use a Gmail App Password, NOT your regular Gmail password.</div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Save Gmail Settings</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- QuickBooks -->
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white border-0 pt-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-receipt me-2 text-success"></i>QuickBooks Online</h6>
+        <p class="text-muted small mb-0 mt-1">Pulls marketing expenses automatically</p>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <input type="hidden" name="action" value="save_qb" />
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Client ID</label>
+            <input type="text" class="form-control font-monospace" name="qb_client_id"
+                   value="{{ setting.get('qb_client_id') or '' }}" placeholder="ABcd1234…" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Client Secret</label>
+            <input type="password" class="form-control font-monospace" name="qb_client_secret"
+                   value="{{ setting.get('qb_client_secret') or '' }}" placeholder="••••••••" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Company (Realm) ID</label>
+            <input type="text" class="form-control font-monospace" name="qb_realm_id"
+                   value="{{ setting.get('qb_realm_id') or '' }}" placeholder="123456789" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Refresh Token</label>
+            <input type="password" class="form-control font-monospace" name="qb_refresh_token"
+                   value="{{ setting.get('qb_refresh_token') or '' }}" placeholder="••••••••" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Marketing Account Names</label>
+            <input type="text" class="form-control" name="qb_marketing_accounts"
+                   value="{{ setting.get('qb_marketing_accounts') or 'Advertising,Marketing,Promotions' }}" />
+            <div class="form-text">Comma-separated. Must match your QuickBooks expense account names exactly.</div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Save QuickBooks Settings</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Ads -->
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white border-0 pt-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-google me-2" style="color:#4285F4"></i>Google Ads</h6>
+        <p class="text-muted small mb-0 mt-1">Pulls Google Search & YouTube ad spend automatically</p>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <input type="hidden" name="action" value="save_google" />
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Developer Token</label>
+            <input type="password" class="form-control font-monospace" name="google_developer_token"
+                   value="{{ setting.get('google_developer_token') or '' }}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Client ID</label>
+            <input type="text" class="form-control font-monospace" name="google_client_id"
+                   value="{{ setting.get('google_client_id') or '' }}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Client Secret</label>
+            <input type="password" class="form-control font-monospace" name="google_client_secret"
+                   value="{{ setting.get('google_client_secret') or '' }}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Refresh Token</label>
+            <input type="password" class="form-control font-monospace" name="google_refresh_token"
+                   value="{{ setting.get('google_refresh_token') or '' }}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Customer ID</label>
+            <input type="text" class="form-control font-monospace" name="google_customer_id"
+                   value="{{ setting.get('google_customer_id') or '' }}" placeholder="XXX-XXX-XXXX" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Save Google Ads Settings</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meta Ads -->
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white border-0 pt-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-meta me-2" style="color:#1877F2"></i>Meta Ads (Facebook & Instagram)</h6>
+        <p class="text-muted small mb-0 mt-1">Pulls Facebook & Instagram ad spend automatically</p>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <input type="hidden" name="action" value="save_meta" />
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">App ID</label>
+            <input type="text" class="form-control font-monospace" name="meta_app_id"
+                   value="{{ setting.get('meta_app_id') or '' }}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">App Secret</label>
+            <input type="password" class="form-control font-monospace" name="meta_app_secret"
+                   value="{{ setting.get('meta_app_secret') or '' }}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Access Token</label>
+            <input type="password" class="form-control font-monospace" name="meta_access_token"
+                   value="{{ setting.get('meta_access_token') or '' }}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Ad Account ID</label>
+            <input type="text" class="form-control font-monospace" name="meta_ad_account_id"
+                   value="{{ setting.get('meta_ad_account_id') or '' }}" placeholder="act_XXXXXXXXX" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Save Meta Ads Settings</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Channels -->
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-0 pt-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-tags me-2"></i>Marketing Channels</h6>
+      </div>
+      <div class="card-body">
+        <form method="POST" class="row g-2 align-items-end mb-3">
+          <input type="hidden" name="action" value="add_channel" />
+          <div class="col-12 col-md-4">
+            <label class="form-label small fw-semibold">Channel Name</label>
+            <input type="text" class="form-control" name="channel_name" placeholder="e.g. TikTok Ads" required />
+          </div>
+          <div class="col-12 col-md-3">
+            <label class="form-label small fw-semibold">Type</label>
+            <select class="form-select" name="channel_type">
+              <option value="digital_paid">Digital — Paid</option>
+              <option value="digital_organic">Digital — Organic</option>
+              <option value="offline">Offline</option>
+              <option value="referral">Referral</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label small fw-semibold">Color</label>
+            <input type="color" class="form-control form-control-color" name="channel_color" value="#6366f1" />
+          </div>
+          <div class="col-12 col-md-3">
+            <button type="submit" class="btn btn-outline-primary w-100">
+              <i class="bi bi-plus-circle me-1"></i>Add Channel
+            </button>
+          </div>
+        </form>
+        <div class="d-flex flex-wrap gap-2">
+          {% for ch in channels %}
+          <span class="badge rounded-pill px-3 py-2" style="background:{{ ch.color }}; font-size:0.8rem">
+            {{ ch.name }}
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email report log -->
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-0 pt-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-envelope-check me-2"></i>Email Report History</h6>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr><th>Received</th><th>From</th><th>Subject</th><th>Type</th><th>Records</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {% for log in email_logs %}
+              <tr>
+                <td class="small">{{ log.processed_at.strftime('%b %d %H:%M') }}</td>
+                <td class="small text-muted">{{ log.sender[:40] }}</td>
+                <td class="small">{{ log.subject[:60] if log.subject else '—' }}</td>
+                <td><span class="badge bg-secondary">{{ log.report_type }}</span></td>
+                <td>{{ log.records_imported }}</td>
+                <td>
+                  {% if log.status == 'ok' %}
+                    <span class="text-success small"><i class="bi bi-check-circle-fill"></i> OK</span>
+                  {% else %}
+                    <span class="text-danger small" title="{{ log.error_message }}">
+                      <i class="bi bi-x-circle-fill"></i> Error
+                    </span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" class="text-center text-muted py-3">No emails processed yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Data Entry — PI Marketing{% endblock %}
+
+{% block content %}
+<h5 class="fw-bold mb-4">Manual Data Entry</h5>
+
+<div class="row g-4">
+  <!-- Add Spend -->
+  <div class="col-12 col-md-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-0 pt-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-cash-stack me-2 text-primary"></i>Add Marketing Spend</h6>
+      </div>
+      <div class="card-body">
+        <form id="spendForm">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Channel</label>
+            <select class="form-select" name="channel_id" required>
+              <option value="">Select channel…</option>
+              {% for ch in channels %}
+              <option value="{{ ch.id }}">{{ ch.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Amount ($)</label>
+            <input type="number" class="form-control" name="amount" step="0.01" min="0" placeholder="0.00" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Date</label>
+            <input type="date" class="form-control" name="spend_date" value="{{ today }}" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Notes (optional)</label>
+            <input type="text" class="form-control" name="notes" placeholder="e.g. Community Fair - March" />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-plus-circle me-2"></i>Add Spend
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Case -->
+  <div class="col-12 col-md-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-0 pt-3">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-briefcase me-2 text-success"></i>Add Signed Case</h6>
+      </div>
+      <div class="card-body">
+        <form id="caseForm">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Date Signed</label>
+            <input type="date" class="form-control" name="date_signed" value="{{ today }}" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Marketing Source (optional)</label>
+            <select class="form-select" name="channel_id">
+              <option value="">Unknown / Not attributed</option>
+              {% for ch in channels %}
+              <option value="{{ ch.id }}">{{ ch.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Notes (optional)</label>
+            <input type="text" class="form-control" name="notes" placeholder="e.g. Client name or case type" />
+          </div>
+          <button type="submit" class="btn btn-success w-100">
+            <i class="bi bi-plus-circle me-2"></i>Add Case
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Spend -->
+<div class="card shadow-sm border-0 mt-4">
+  <div class="card-header bg-white border-0 pt-3">
+    <h6 class="fw-semibold mb-0">Recent Manual Spend Entries</h6>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr><th>Date</th><th>Channel</th><th>Amount</th><th>Notes</th><th></th></tr>
+        </thead>
+        <tbody id="spendTable">
+          {% for s in recent_spend %}
+          <tr id="spend-row-{{ s.id }}">
+            <td>{{ s.spend_date.strftime('%b %d, %Y') }}</td>
+            <td>{{ s.channel.name if s.channel else '—' }}</td>
+            <td>${{ "{:,.2f}".format(s.amount) }}</td>
+            <td class="text-muted small">{{ s.notes or '—' }}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteSpend({{ s.id }})">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="text-center text-muted py-3">No manual entries yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Cases -->
+<div class="card shadow-sm border-0 mt-4">
+  <div class="card-header bg-white border-0 pt-3">
+    <h6 class="fw-semibold mb-0">Recent Manual Case Entries</h6>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr><th>Date Signed</th><th>Channel</th><th>Notes</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for c in recent_cases %}
+          <tr id="case-row-{{ c.id }}">
+            <td>{{ c.date_signed.strftime('%b %d, %Y') }}</td>
+            <td>{{ c.channel.name if c.channel else '—' }}</td>
+            <td class="text-muted small">{{ c.notes or '—' }}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteCase({{ c.id }})">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="text-center text-muted py-3">No manual entries yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function formToJson(form) {
+  const data = {};
+  new FormData(form).forEach((v, k) => { data[k] = v || null; });
+  return data;
+}
+
+document.getElementById('spendForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = formToJson(e.target);
+  const resp = await fetch('/api/spend', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+  });
+  const result = await resp.json();
+  if (result.id) { location.reload(); }
+  else { alert('Error: ' + (result.error || 'Unknown error')); }
+});
+
+document.getElementById('caseForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = formToJson(e.target);
+  const resp = await fetch('/api/case', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+  });
+  const result = await resp.json();
+  if (result.id) { location.reload(); }
+  else { alert('Error: ' + (result.error || 'Unknown error')); }
+});
+
+async function deleteSpend(id) {
+  if (!confirm('Delete this spend entry?')) return;
+  await fetch(`/api/spend/${id}`, { method: 'DELETE' });
+  document.getElementById(`spend-row-${id}`)?.remove();
+}
+
+async function deleteCase(id) {
+  if (!confirm('Delete this case entry?')) return;
+  await fetch(`/api/case/${id}`, { method: 'DELETE' });
+  document.getElementById(`case-row-${id}`)?.remove();
+}
+</script>
+{% endblock %}

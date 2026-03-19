@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — PI Marketing{% endblock %}
+
+{% block content %}
+<!-- ── Period filter ──────────────────────────────────────────────────────── -->
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2">
+  <h5 class="fw-bold mb-0">Case Acquisition Dashboard</h5>
+  <form class="d-flex gap-2 align-items-center" method="GET" action="{{ url_for('dashboard.home') }}" id="periodForm">
+    <select class="form-select form-select-sm" name="period" onchange="this.form.submit()" style="width:auto">
+      <option value="this_month"  {% if period=='this_month'  %}selected{% endif %}>This Month</option>
+      <option value="last_month"  {% if period=='last_month'  %}selected{% endif %}>Last Month</option>
+      <option value="last_3"      {% if period=='last_3'      %}selected{% endif %}>Last 3 Months</option>
+      <option value="last_6"      {% if period=='last_6'      %}selected{% endif %}>Last 6 Months</option>
+      <option value="last_12"     {% if period=='last_12'     %}selected{% endif %}>Last 12 Months</option>
+      <option value="ytd"         {% if period=='ytd'         %}selected{% endif %}>Year to Date</option>
+      <option value="custom"      {% if period=='custom'      %}selected{% endif %}>Custom</option>
+    </select>
+    {% if period == 'custom' %}
+    <input type="date" class="form-control form-control-sm" name="start" value="{{ start }}" style="width:auto" />
+    <span class="text-muted">to</span>
+    <input type="date" class="form-control form-control-sm" name="end" value="{{ end }}" style="width:auto" />
+    <button class="btn btn-sm btn-primary" type="submit">Apply</button>
+    {% endif %}
+  </form>
+</div>
+
+<!-- ── KPI Cards ──────────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <p class="text-muted small mb-1"><i class="bi bi-cash-stack me-1"></i>Total Marketing Spend</p>
+        <h3 class="fw-bold mb-0">${{ "{:,.0f}".format(total_spend) }}</h3>
+        <p class="text-muted small mb-0 mt-1">{{ start.strftime('%b %d') }} – {{ end.strftime('%b %d, %Y') }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <p class="text-muted small mb-1"><i class="bi bi-briefcase me-1"></i>Cases Signed</p>
+        <h3 class="fw-bold mb-0">{{ total_cases }}</h3>
+        <p class="text-muted small mb-0 mt-1">{{ start.strftime('%b %d') }} – {{ end.strftime('%b %d, %Y') }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="card shadow-sm border-0 h-100 bg-primary text-white">
+      <div class="card-body">
+        <p class="small mb-1 opacity-75"><i class="bi bi-bullseye me-1"></i>Avg. Case Acquisition Cost</p>
+        {% if avg_cpa > 0 %}
+          <h3 class="fw-bold mb-0">${{ "{:,.0f}".format(avg_cpa) }}</h3>
+        {% else %}
+          <h3 class="fw-bold mb-0">—</h3>
+        {% endif %}
+        <p class="small mb-0 mt-1 opacity-75">per signed case</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Charts ─────────────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <!-- Monthly CPA trend -->
+  <div class="col-12 col-xl-8">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3">Monthly Acquisition Cost Trend (12 months)</h6>
+        <canvas id="trendChart" style="max-height:280px"></canvas>
+      </div>
+    </div>
+  </div>
+  <!-- Spend by channel donut -->
+  <div class="col-12 col-xl-4">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body d-flex flex-column">
+        <h6 class="fw-semibold mb-3">Spend by Channel</h6>
+        <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+          <canvas id="channelDonut" style="max-height:260px"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Spend vs Cases bar chart -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3">Monthly Spend vs. Cases Signed</h6>
+        <canvas id="spendCasesChart" style="max-height:240px"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Channel breakdown table ────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-0 pt-3">
+        <h6 class="fw-semibold mb-0">Channel Breakdown</h6>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Channel</th>
+                <th class="text-end">Spend</th>
+                <th class="text-end">Cases</th>
+                <th class="text-end">Cost / Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ch in channel_table %}
+              {% if ch.spend > 0 or ch.cases > 0 %}
+              <tr>
+                <td>
+                  <span class="badge me-2" style="background:{{ ch.color }}; width:12px; height:12px; border-radius:50%; display:inline-block; vertical-align:middle;"></span>
+                  {{ ch.name }}
+                </td>
+                <td class="text-end">${{ "{:,.0f}".format(ch.spend) }}</td>
+                <td class="text-end">{{ ch.cases }}</td>
+                <td class="text-end">
+                  {% if ch.cpa %}
+                    ${{ "{:,.0f}".format(ch.cpa) }}
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Sync status ────────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-2">
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-semibold mb-0">Data Sync</h6>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-secondary" onclick="triggerSync('gmail')">
+            <i class="bi bi-envelope me-1"></i>Check Email Reports
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="triggerSync('quickbooks')">
+            <i class="bi bi-receipt me-1"></i>Sync QuickBooks
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="triggerSync('google_ads')">
+            <i class="bi bi-google me-1"></i>Sync Google Ads
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="triggerSync('meta_ads')">
+            <i class="bi bi-meta me-1"></i>Sync Meta Ads
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr><th>Source</th><th>Status</th><th>Records</th><th>Message</th><th>Time</th></tr>
+            </thead>
+            <tbody id="syncLogsBody">
+              {% for log in sync_logs %}
+              <tr>
+                <td><span class="badge bg-secondary">{{ log.source }}</span></td>
+                <td>
+                  {% if log.status == 'ok' %}
+                    <span class="text-success"><i class="bi bi-check-circle-fill"></i></span>
+                  {% else %}
+                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i></span>
+                  {% endif %}
+                </td>
+                <td>{{ log.records_synced }}</td>
+                <td class="text-muted small">{{ log.message or '—' }}</td>
+                <td class="text-muted small">{{ log.ran_at.strftime('%b %d %H:%M') }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" class="text-center text-muted py-3">No syncs yet. Click a button above to sync now.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── Chart data from server ───────────────────────────────────────────────────
+const trendLabels = {{ trend_labels | tojson }};
+const trendSpend  = {{ trend_spend  | tojson }};
+const trendCases  = {{ trend_cases  | tojson }};
+const trendCpa    = {{ trend_cpa    | tojson }};
+
+const channelNames   = {{ channel_spend_rows | map(attribute='name')  | list | tojson }};
+const channelSpends  = {{ channel_spend_rows | map(attribute='spend')  | list | tojson }};
+const channelColors  = {{ channel_spend_rows | map(attribute='color')  | list | tojson }};
+
+// ── Trend chart ──────────────────────────────────────────────────────────────
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: trendLabels,
+    datasets: [{
+      label: 'Avg. Cost per Case ($)',
+      data: trendCpa,
+      borderColor: '#6366f1',
+      backgroundColor: 'rgba(99,102,241,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { ticks: { callback: v => '$' + v.toLocaleString() }, beginAtZero: true },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ── Donut chart ──────────────────────────────────────────────────────────────
+const nonZeroLabels = channelNames.filter((_, i) => channelSpends[i] > 0);
+const nonZeroData   = channelSpends.filter(v => v > 0);
+const nonZeroColors = channelColors.filter((_, i) => channelSpends[i] > 0);
+
+if (nonZeroData.length > 0) {
+  new Chart(document.getElementById('channelDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: nonZeroLabels,
+      datasets: [{ data: nonZeroData, backgroundColor: nonZeroColors, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.toLocaleString() } }
+      }
+    }
+  });
+} else {
+  document.getElementById('channelDonut').parentElement.innerHTML =
+    '<p class="text-center text-muted mt-4">No spend data yet.</p>';
+}
+
+// ── Spend vs Cases bar chart ─────────────────────────────────────────────────
+new Chart(document.getElementById('spendCasesChart'), {
+  type: 'bar',
+  data: {
+    labels: trendLabels,
+    datasets: [
+      {
+        label: 'Spend ($)',
+        data: trendSpend,
+        backgroundColor: 'rgba(99,102,241,0.7)',
+        yAxisID: 'ySpend',
+        order: 2,
+      },
+      {
+        label: 'Cases Signed',
+        data: trendCases,
+        type: 'line',
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.15)',
+        yAxisID: 'yCases',
+        tension: 0.4,
+        pointRadius: 4,
+        fill: false,
+        order: 1,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      ySpend: {
+        type: 'linear', position: 'left',
+        ticks: { callback: v => '$' + v.toLocaleString() }, beginAtZero: true,
+      },
+      yCases: {
+        type: 'linear', position: 'right', beginAtZero: true,
+        grid: { drawOnChartArea: false },
+      },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ── Sync trigger ─────────────────────────────────────────────────────────────
+async function triggerSync(source) {
+  const btn = event.target.closest('button');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Syncing…';
+
+  try {
+    const resp = await fetch(`/api/sync/${source}`, { method: 'POST' });
+    const data = await resp.json();
+    alert(data.message || (data.status === 'ok' ? 'Sync complete.' : 'Sync failed.'));
+    if (data.status === 'ok') location.reload();
+  } catch (e) {
+    alert('Sync request failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
+</script>
+{% endblock %}

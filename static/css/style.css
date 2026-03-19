@@ -1,0 +1,31 @@
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
+/* ── Cards ─────────────────────────────────────────────────────────────────── */
+.card { border-radius: 12px; }
+.card-header { border-radius: 12px 12px 0 0 !important; }
+
+/* ── Navbar ─────────────────────────────────────────────────────────────────── */
+.navbar { padding: 0.6rem 0; }
+.navbar-brand { font-size: 1.1rem; letter-spacing: -0.2px; }
+.nav-link { font-size: 0.9rem; }
+
+/* ── KPI cards ──────────────────────────────────────────────────────────────── */
+.card h3 { font-size: 2rem; letter-spacing: -1px; }
+
+/* ── Tables ─────────────────────────────────────────────────────────────────── */
+.table th { font-size: 0.78rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.05em; color: #64748b; }
+.table td { font-size: 0.88rem; vertical-align: middle; }
+
+/* ── Responsive chart containers ────────────────────────────────────────────── */
+canvas { max-width: 100%; }
+
+/* ── Monospace inputs ───────────────────────────────────────────────────────── */
+.font-monospace { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.85rem; }
+
+/* ── Utility ─────────────────────────────────────────────────────────────────── */
+@media (max-width: 576px) {
+  .card h3 { font-size: 1.6rem; }
+  main.container-fluid { padding: 1rem !important; }
+}
