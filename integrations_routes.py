@@ -17,7 +17,7 @@ def _qb_client():
     return (
         AppSetting.get("qb_client_id")     or os.environ.get("QB_CLIENT_ID", ""),
         AppSetting.get("qb_client_secret") or os.environ.get("QB_CLIENT_SECRET", ""),
-        os.environ.get("QB_REDIRECT_URI", ""),
+        AppSetting.get("qb_redirect_uri")  or os.environ.get("QB_REDIRECT_URI", ""),
     )
 
 

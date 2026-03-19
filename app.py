@@ -82,6 +82,16 @@ def _seed_defaults():
     except IntegrityError:
         db.session.rollback()
 
+    # Seed API credentials from environment variables into AppSettings
+    env_settings = {
+        "qb_client_id":      os.environ.get("QB_CLIENT_ID", ""),
+        "qb_client_secret":  os.environ.get("QB_CLIENT_SECRET", ""),
+        "qb_redirect_uri":   os.environ.get("QB_REDIRECT_URI", ""),
+    }
+    for key, value in env_settings.items():
+        if value and not AppSetting.get(key):
+            AppSetting.set(key, value)
+
     # Default marketing channels
     default_channels = [
         ("Google Ads",        "digital_paid",    "#4285F4"),
